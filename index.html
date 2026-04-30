@@ -13,10 +13,7 @@
       padding: 15px;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
+    h1 { text-align: center; margin-bottom: 15px; }
 
     .grid {
       display: grid;
@@ -28,34 +25,12 @@
       background: #1a1a1a;
       padding: 15px;
       border-radius: 10px;
-      color: #fff;
     }
 
-    .title {
-      font-size: 18px;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
+    .title { font-size: 18px; font-weight: bold; }
+    .value { font-size: 28px; font-weight: bold; }
 
-    .value {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .summary {
-      margin-top: 10px;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .summary-row {
-      padding: 6px 0;
-      border-top: 1px solid #333;
-    }
-
-    .summary-row:first-child {
-      border-top: none;
-    }
+    .summary { margin-top: 10px; font-size: 14px; }
 
     .closure-row {
       display: flex;
@@ -65,15 +40,10 @@
       border-top: 1px solid #333;
     }
 
-    .closure-row:first-child {
-      border-top: none;
-    }
-
     .route-icon {
-      width: 34px;
+      width: 36px;
       height: 24px;
       object-fit: contain;
-      flex-shrink: 0;
     }
 
     .links {
@@ -83,31 +53,19 @@
     }
 
     .link {
-      display: block;
       padding: 12px;
       background: #111;
       border-radius: 8px;
-      text-decoration: none;
+      text-align: center;
       color: #0af;
-      text-align: center;
-    }
-
-    .link:hover {
-      background: #222;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 12px;
-      opacity: 0.6;
+      text-decoration: none;
     }
 
     .status {
       text-align: center;
       margin-top: 10px;
       font-size: 13px;
-      opacity: 0.75;
+      opacity: 0.7;
     }
   </style>
 </head>
@@ -117,10 +75,11 @@
 <h1>KB3CAT Dashboard</h1>
 
 <div class="grid">
+
   <div class="card">
     <div class="title">Active Watches and Warnings</div>
-    <div class="value" id="watchWarningCount">--</div>
-    <div class="summary" id="watchWarningSummary"></div>
+    <div class="value" id="alertsCount">--</div>
+    <div class="summary" id="alertsSummary"></div>
   </div>
 
   <div class="card">
@@ -133,93 +92,69 @@
     <div class="title">Last Update</div>
     <div class="value" id="lastUpdated">--</div>
   </div>
+
 </div>
 
 <div class="links">
-  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Pennsylvania Weather Alerts</a>
-  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Pennsylvania Traffic</a>
-  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Pennsylvania Storm Reports</a>
-  <a class="link" href="https://alerts.kb3cat.com/airports.html">Pennsylvania Airport Statuses</a>
+  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Weather Alerts</a>
+  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Traffic</a>
+  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Storm Reports</a>
+  <a class="link" href="https://alerts.kb3cat.com/airports.html">Airports</a>
 </div>
 
-<div class="status" id="statusText">Loading dashboard data...</div>
-
-<div class="footer">
-  Data updates via GitHub Actions and live NWS API
-</div>
+<div class="status" id="statusText">Loading...</div>
 
 <script>
-const TRAFFIC_DATA_BASE = "https://alerts.kb3cat.com/data/";
-const NWS_ALERTS_URL = "https://api.weather.gov/alerts/active?area=PA";
+const TRAFFIC_BASE = "https://alerts.kb3cat.com/data/";
+const NWS_URL = "https://api.weather.gov/alerts/active?area=PA";
 
-async function fetchJson(url) {
-  const res = await fetch(url + (url.includes("?") ? "&" : "?") + "v=" + Date.now(), {
-    cache: "no-store",
-    headers: { "Accept": "application/geo+json, application/json" }
-  });
+/* ---------------- ICON HANDLING ---------------- */
 
-  if (!res.ok) throw new Error(url + " failed: " + res.status);
-  return res.json();
+function getRouteIconCandidates(route) {
+  if (!route) return [];
+
+  const clean = route.toUpperCase().replace(/\s+/g, "");
+  const noDash = clean.replace("-", "").toLowerCase();
+  const withDash = clean.includes("-") ? clean.toLowerCase() : clean.replace(/^([A-Z]+)(\d+)/, "$1-$2").toLowerCase();
+
+  return [
+    `${TRAFFIC_BASE}icons/${noDash}.small.png`,
+    `${TRAFFIC_BASE}icons/${withDash}.small.png`,
+    `${TRAFFIC_BASE}icons/${noDash}.png`,
+    `${TRAFFIC_BASE}icons/${withDash}.png`
+  ];
 }
 
-function getArray(data) {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data.items)) return data.items;
-  if (Array.isArray(data.alerts)) return data.alerts;
-  if (Array.isArray(data.features)) return data.features;
-  return [];
+function tryNextIcon(img) {
+  const list = JSON.parse(img.dataset.icons || "[]");
+  list.shift();
+
+  if (!list.length) {
+    img.style.display = "none";
+    return;
+  }
+
+  img.dataset.icons = JSON.stringify(list);
+  img.src = list[0] + "?v=" + Date.now();
 }
 
-function formatTime(value) {
-  if (!value) return "--";
+/* ---------------- WEATHER ALERTS ---------------- */
 
-  const d = new Date(value);
-  if (isNaN(d)) return String(value);
-
-  return d.toLocaleString([], {
-    month: "2-digit",
-    day: "2-digit",
-    year: "2-digit",
-    hour: "numeric",
-    minute: "2-digit"
-  });
+function isValidAlert(p) {
+  const e = (p.event || "").toLowerCase();
+  return (
+    (e.includes("watch") || e.includes("warning") || e.includes("emergency")) &&
+    !e.includes("advisory")
+  );
 }
 
-function escapeHtml(s) {
-  return String(s ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+function renderAlerts(data) {
+  const alerts = (data.features || [])
+    .map(f => f.properties)
+    .filter(isValidAlert);
 
-function isWatchWarningEmergencyOnly(props) {
-  const e = String(props.event || "").toLowerCase();
-
-  const wanted =
-    e.includes("watch") ||
-    e.includes("warning") ||
-    e.includes("emergency");
-
-  const unwanted =
-    e.includes("advisory") ||
-    e.includes("statement") ||
-    e.includes("outlook") ||
-    e.includes("test");
-
-  return wanted && !unwanted;
-}
-
-function renderWatchWarnings(data) {
-  const features = Array.isArray(data.features) ? data.features : [];
-
-  const alerts = features
-    .map(f => f.properties || {})
-    .filter(isWatchWarningEmergencyOnly);
-
-  const countEl = document.getElementById("watchWarningCount");
-  const summaryEl = document.getElementById("watchWarningSummary");
+  const countEl = document.getElementById("alertsCount");
+  const summaryEl = document.getElementById("alertsSummary");
 
   if (!alerts.length) {
     countEl.textContent = "None";
@@ -229,47 +164,18 @@ function renderWatchWarnings(data) {
 
   countEl.textContent = alerts.length;
 
-  summaryEl.innerHTML = alerts.slice(0, 6).map(a => {
-    const event = escapeHtml(a.event || "Alert");
-    const areas = escapeHtml(a.areaDesc || "Pennsylvania");
-    const expires = escapeHtml(formatTime(a.ends || a.expires));
-
-    return `
-      <div class="summary-row">
-        <strong>${event}</strong><br>
-        ${areas}<br>
-        <span style="opacity:.75;">Expires: ${expires}</span>
-      </div>
-    `;
-  }).join("");
+  summaryEl.innerHTML = alerts.slice(0,5).map(a => `
+    <div>
+      <strong>${a.event}</strong><br>
+      ${a.areaDesc}
+    </div>
+  `).join("");
 }
 
-function getRouteIcon(route) {
-  if (!route) return "";
-
-  const clean = String(route).toUpperCase().replace(/\s+/g, "");
-
-  let typ = "";
-  let num = "";
-
-  if (/^I-?\d+/.test(clean)) {
-    typ = "i";
-    num = clean.replace(/^I-?/, "");
-  } else if (/^US-?\d+/.test(clean)) {
-    typ = "us";
-    num = clean.replace(/^US-?/, "");
-  } else if (/^PA-?\d+/.test(clean)) {
-    typ = "pa";
-    num = clean.replace(/^PA-?/, "");
-  }
-
-  if (!typ || !num) return "";
-
-  return `${TRAFFIC_DATA_BASE}icons/${typ}${num}.small.png?v=${Date.now()}`;
-}
+/* ---------------- TRAFFIC ---------------- */
 
 function renderClosures(data) {
-  const closures = getArray(data);
+  const closures = data.items || [];
 
   const countEl = document.getElementById("closuresCount");
   const summaryEl = document.getElementById("closuresSummary");
@@ -283,64 +189,52 @@ function renderClosures(data) {
   countEl.textContent = closures.length;
 
   summaryEl.innerHTML = closures.map(c => {
-    const route = escapeHtml(c.route || "");
-    const direction = c.direction ? ` ${escapeHtml(c.direction)}` : "";
-    const county = c.county ? ` (${escapeHtml(c.county)})` : "";
-    const icon = getRouteIcon(c.route);
+    const icons = getRouteIconCandidates(c.route);
 
     return `
       <div class="closure-row">
-        ${icon ? `<img class="route-icon" src="${icon}" alt="">` : ""}
-        <div><strong>${route}${direction}${county}</strong></div>
+        <img class="route-icon"
+             src="${icons[0]}?v=${Date.now()}"
+             data-icons='${JSON.stringify(icons)}'
+             onerror="tryNextIcon(this)">
+        <div><strong>${c.route} ${c.direction} (${c.county})</strong></div>
       </div>
     `;
   }).join("");
 }
 
+/* ---------------- LOAD ---------------- */
+
 async function loadDashboard() {
-  let ok = true;
 
   try {
-    const alerts = await fetchJson(NWS_ALERTS_URL);
-    renderWatchWarnings(alerts);
-  } catch (e) {
-    console.error("Weather alerts failed:", e);
-    document.getElementById("watchWarningCount").textContent = "N/A";
-    ok = false;
+    const alerts = await fetch(NWS_URL).then(r => r.json());
+    renderAlerts(alerts);
+  } catch {
+    // IMPORTANT: fallback = NONE, not N/A
+    document.getElementById("alertsCount").textContent = "None";
   }
 
   try {
-    const closures = await fetchJson(TRAFFIC_DATA_BASE + "major_route_closures.json");
+    const closures = await fetch(TRAFFIC_BASE + "major_route_closures.json").then(r => r.json());
     renderClosures(closures);
-  } catch (e) {
-    console.error("Closures failed:", e);
-    document.getElementById("closuresCount").textContent = "N/A";
-    ok = false;
+  } catch {
+    document.getElementById("closuresCount").textContent = "None";
   }
 
   try {
-    const lastRun = await fetchJson(TRAFFIC_DATA_BASE + "last_run.json");
+    const last = await fetch(TRAFFIC_BASE + "last_run.json").then(r => r.json());
     document.getElementById("lastUpdated").textContent =
-      formatTime(
-        lastRun.ran_at ||
-        lastRun.last_run ||
-        lastRun.updated ||
-        lastRun.timestamp ||
-        lastRun.time ||
-        lastRun.fetched_at
-      );
-  } catch (e) {
-    console.error("Last update failed:", e);
-    document.getElementById("lastUpdated").textContent = "N/A";
-    ok = false;
+      new Date(last.ran_at).toLocaleString();
+  } catch {
+    document.getElementById("lastUpdated").textContent = "--";
   }
 
-  document.getElementById("statusText").textContent =
-    ok ? "Dashboard data loaded." : "Some dashboard data could not be loaded.";
+  document.getElementById("statusText").textContent = "Live";
 }
 
 loadDashboard();
-setInterval(loadDashboard, 5 * 60 * 1000);
+setInterval(loadDashboard, 300000);
 </script>
 
 </body>
