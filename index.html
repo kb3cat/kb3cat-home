@@ -110,7 +110,7 @@
 </div>
 
 <script>
-const DATA_BASE = "https://kb3cat.github.io/pa-alerts/data/";
+const DATA_BASE = "https://alerts.kb3cat.com/data/";
 
 async function fetchJson(path) {
   const res = await fetch(DATA_BASE + path + "?v=" + Date.now(), { cache: "no-store" });
@@ -124,13 +124,16 @@ function countItems(data) {
   if (Array.isArray(data.alerts)) return data.alerts.length;
   if (Array.isArray(data.features)) return data.features.length;
   if (Array.isArray(data.closures)) return data.closures.length;
+  if (typeof data.count === "number") return data.count;
   return 0;
 }
 
 function formatTime(value) {
   if (!value) return "--";
+
   const d = new Date(value);
   if (isNaN(d)) return String(value);
+
   return d.toLocaleString([], {
     month: "2-digit",
     day: "2-digit",
@@ -162,7 +165,14 @@ async function loadDashboard() {
   try {
     const lastRun = await fetchJson("last_run.json");
     document.getElementById("lastUpdated").textContent =
-      formatTime(lastRun.last_run || lastRun.updated || lastRun.timestamp || lastRun.time);
+      formatTime(
+        lastRun.ran_at ||
+        lastRun.last_run ||
+        lastRun.updated ||
+        lastRun.timestamp ||
+        lastRun.time ||
+        lastRun.fetched_at
+      );
   } catch (e) {
     document.getElementById("lastUpdated").textContent = "N/A";
     ok = false;
