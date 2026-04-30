@@ -27,12 +27,7 @@
       background: #1a1a1a;
       padding: 15px;
       border-radius: 10px;
-      text-decoration: none;
       color: #fff;
-    }
-
-    .card:hover {
-      background: #222;
     }
 
     .title {
@@ -71,6 +66,13 @@
       font-size: 12px;
       opacity: 0.6;
     }
+
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: 0.75;
+    }
   </style>
 </head>
 <body>
@@ -95,40 +97,83 @@
 </div>
 
 <div class="links">
-  <a class="link" href="/alerts.html">Alerts</a>
-  <a class="link" href="/traffic.html">Traffic</a>
-  <a class="link" href="/storms.html">Storm Reports</a>
-  <a class="link" href="/airports.html">Airports</a>
+  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Alerts</a>
+  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Traffic</a>
+  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Storm Reports</a>
+  <a class="link" href="https://alerts.kb3cat.com/airports.html">Airports</a>
 </div>
 
+<div class="status" id="statusText">Loading dashboard data...</div>
+
 <div class="footer">
-  Data updates every few minutes via GitHub Actions
+  Data updates via GitHub Actions
 </div>
 
 <script>
-async function loadData() {
-  try {
-    const res = await fetch("/data/last_run.json");
-    const data = await res.json();
+const DATA_BASE = "https://kb3cat.github.io/pa-alerts/data/";
 
-    document.getElementById("lastUpdated").textContent =
-      new Date(data.last_run).toLocaleTimeString();
-  } catch {}
-  
-  try {
-    const alerts = await fetch("/data/alerts.json").then(r => r.json());
-    document.getElementById("alertsCount").textContent =
-      alerts.length || 0;
-  } catch {}
-
-  try {
-    const traffic = await fetch("/data/major_route_closures.json").then(r => r.json());
-    document.getElementById("closuresCount").textContent =
-      traffic.length || 0;
-  } catch {}
+async function fetchJson(path) {
+  const res = await fetch(DATA_BASE + path + "?v=" + Date.now(), { cache: "no-store" });
+  if (!res.ok) throw new Error(path + " failed: " + res.status);
+  return res.json();
 }
 
-loadData();
+function countItems(data) {
+  if (Array.isArray(data)) return data.length;
+  if (Array.isArray(data.items)) return data.items.length;
+  if (Array.isArray(data.alerts)) return data.alerts.length;
+  if (Array.isArray(data.features)) return data.features.length;
+  if (Array.isArray(data.closures)) return data.closures.length;
+  return 0;
+}
+
+function formatTime(value) {
+  if (!value) return "--";
+  const d = new Date(value);
+  if (isNaN(d)) return String(value);
+  return d.toLocaleString([], {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+async function loadDashboard() {
+  let ok = true;
+
+  try {
+    const alerts = await fetchJson("alerts.json");
+    document.getElementById("alertsCount").textContent = countItems(alerts);
+  } catch (e) {
+    document.getElementById("alertsCount").textContent = "N/A";
+    ok = false;
+  }
+
+  try {
+    const closures = await fetchJson("major_route_closures.json");
+    document.getElementById("closuresCount").textContent = countItems(closures);
+  } catch (e) {
+    document.getElementById("closuresCount").textContent = "N/A";
+    ok = false;
+  }
+
+  try {
+    const lastRun = await fetchJson("last_run.json");
+    document.getElementById("lastUpdated").textContent =
+      formatTime(lastRun.last_run || lastRun.updated || lastRun.timestamp || lastRun.time);
+  } catch (e) {
+    document.getElementById("lastUpdated").textContent = "N/A";
+    ok = false;
+  }
+
+  document.getElementById("statusText").textContent =
+    ok ? "Dashboard data loaded." : "Some dashboard data could not be loaded.";
+}
+
+loadDashboard();
+setInterval(loadDashboard, 5 * 60 * 1000);
 </script>
 
 </body>
