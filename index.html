@@ -46,8 +46,6 @@
       object-fit: contain;
     }
 
-    /* ---------- NEW CARD GRID ---------- */
-
     .section-title {
       margin-top: 25px;
       margin-bottom: 10px;
@@ -124,7 +122,6 @@
 
 </div>
 
-<!-- 🔥 NEW SECTION -->
 <div class="section-title">PennAlerts Boards</div>
 
 <div class="link-grid">
@@ -161,10 +158,10 @@
 
 </div>
 
+<!-- ✅ UPDATED CONTACT BUTTON -->
 <div style="margin-top:20px; text-align:center;">
 
-  <a href="mailto:administrator@kb3cat.com?subject=KB3CAT Dashboard Feedback"
-     style="
+  <a href="contact.html" style="
        display:inline-block;
        padding:12px 18px;
        background:#00bfff;
@@ -173,9 +170,7 @@
        border-radius:8px;
        text-decoration:none;
        transition:0.15s;
-     "
-     onmouseover="this.style.background='#33ccff'"
-     onmouseout="this.style.background='#00bfff'">
+     " onmouseover="this.style.background='#33ccff'" onmouseout="this.style.background='#00bfff'">
 
     Contact / Suggestions
 
@@ -186,8 +181,8 @@
   </div>
 
 </div>
-  
-  <div class="status" id="statusText">Loading...</div>
+
+<div class="status" id="statusText">Loading...</div>
 
 <script>
 const TRAFFIC_BASE = "https://alerts.kb3cat.com/data/";
@@ -316,6 +311,8 @@ async function loadDashboard() {
 loadDashboard();
 setInterval(loadDashboard, 300000);
 </script>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" crossorigin="anonymous"></script>
 
 </body>
 </html>
