@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Contact & Suggestions - PA Alerts</title>
+  <title>Contact & Suggestions - KB3CAT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
+      background: #0b0b0b;
+      color: #fff;
       margin: 0;
       padding: 20px;
     }
@@ -16,14 +17,16 @@
     .container {
       max-width: 700px;
       margin: auto;
-      background: #1e293b;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2d;
       padding: 25px;
-      border-radius: 10px;
+      border-radius: 12px;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 20px;
+      color: #00bfff;
     }
 
     label {
@@ -36,9 +39,11 @@
       width: 100%;
       padding: 10px;
       margin-top: 5px;
-      border-radius: 5px;
+      border-radius: 6px;
       border: none;
       font-size: 14px;
+      background: #111;
+      color: #fff;
     }
 
     textarea {
@@ -49,22 +54,24 @@
       margin-top: 20px;
       width: 100%;
       padding: 12px;
-      background: #ef4444;
-      color: white;
+      background: #00bfff;
+      color: #000;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
+      transition: 0.15s;
     }
 
     button:hover {
-      background: #dc2626;
+      background: #33ccff;
     }
 
     .note {
       margin-top: 15px;
-      font-size: 13px;
-      color: #9ca3af;
+      font-size: 12px;
+      opacity: 0.6;
       text-align: center;
     }
 
@@ -72,7 +79,7 @@
       display: block;
       text-align: center;
       margin-top: 15px;
-      color: #60a5fa;
+      color: #00bfff;
       text-decoration: none;
     }
 
@@ -81,16 +88,22 @@
     }
   </style>
 </head>
+
 <body>
 
 <div class="container">
   <h1>Contact & Suggestions</h1>
 
-  <form action="https://formspree.io/f/xgodwqwv" method="POST">
+  <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
 
+    <!-- ✅ Redirect AFTER submit -->
     <input type="hidden" name="_redirect" value="https://alerts.kb3cat.com/thanks.html">
-    
+
+    <!-- Subject -->
     <input type="hidden" name="_subject" value="PA Alerts Contact/Suggestion Submission">
+
+    <!-- Honeypot spam protection -->
+    <input type="text" name="_gotcha" style="display:none">
 
     <label>Name</label>
     <input type="text" name="name" required>
@@ -109,23 +122,21 @@
     </select>
 
     <label>Page / Dashboard</label>
-    <input type="text" name="dashboard" placeholder="Example: Weather Alerts, Airports, Outages">
+    <input type="text" name="dashboard" placeholder="Example: Weather Alerts, Airports, Traffic">
 
     <label>Message</label>
     <textarea name="message" rows="6" required></textarea>
 
-    <!-- Spam protection -->
-    <input type="text" name="_gotcha" style="display:none">
-
     <button type="submit">Send Message</button>
 
-    <p class="note">
+    <div class="note">
       This form is for website feedback only and is not monitored for emergencies.
-    </p>
+    </div>
 
   </form>
 
   <a href="index.html" class="back-link">← Back to Dashboard</a>
+
 </div>
 
 </body>
