@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact & Suggestions - PA Alerts</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #dc2626;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Contact & Suggestions</h1>
+
+  <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+
+    <input type="hidden" name="_subject" value="PA Alerts Contact/Suggestion Submission">
+
+    <label>Name</label>
+    <input type="text" name="name" required>
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <label>Topic</label>
+    <select name="topic" required>
+      <option value="">Select one</option>
+      <option>General Question</option>
+      <option>Bug Report</option>
+      <option>Dashboard Suggestion</option>
+      <option>Data Issue</option>
+      <option>Other</option>
+    </select>
+
+    <label>Page / Dashboard</label>
+    <input type="text" name="dashboard" placeholder="Example: Weather Alerts, Airports, Outages">
+
+    <label>Message</label>
+    <textarea name="message" rows="6" required></textarea>
+
+    <!-- Spam protection -->
+    <input type="text" name="_gotcha" style="display:none">
+
+    <button type="submit">Send Message</button>
+
+    <p class="note">
+      This form is for website feedback only and is not monitored for emergencies.
+    </p>
+
+  </form>
+
+  <a href="index.html" class="back-link">← Back to Dashboard</a>
+</div>
+
+</body>
+</html>
