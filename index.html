@@ -46,19 +46,48 @@
       object-fit: contain;
     }
 
-    .links {
-      margin-top: 15px;
-      display: grid;
-      gap: 10px;
+    /* ---------- NEW CARD GRID ---------- */
+
+    .section-title {
+      margin-top: 25px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      opacity: 0.85;
     }
 
-    .link {
-      padding: 12px;
-      background: #111;
-      border-radius: 8px;
-      text-align: center;
-      color: #0af;
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .link-card {
       text-decoration: none;
+      color: #fff;
+      background: linear-gradient(180deg, #1a1a1a, #111);
+      border: 1px solid #2a2a2d;
+      border-radius: 12px;
+      padding: 14px;
+      transition: 0.15s;
+    }
+
+    .link-card:hover {
+      transform: translateY(-2px);
+      border-color: #00bfff;
+    }
+
+    .link-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .link-desc {
+      font-size: 12px;
+      color: #aaa;
     }
 
     .status {
@@ -95,11 +124,41 @@
 
 </div>
 
-<div class="links">
-  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Weather Alerts</a>
-  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Traffic</a>
-  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Storm Reports</a>
-  <a class="link" href="https://alerts.kb3cat.com/airports.html">Airports</a>
+<!-- 🔥 NEW SECTION -->
+<div class="section-title">PennAlerts Boards</div>
+
+<div class="link-grid">
+
+  <a class="link-card" href="alerts.html">
+    <div class="link-title">Weather Alerts</div>
+    <div class="link-desc">Active PA watches and warnings</div>
+  </a>
+
+  <a class="link-card" href="advisories.html">
+    <div class="link-title">Advisories</div>
+    <div class="link-desc">Includes advisories + alerts</div>
+  </a>
+
+  <a class="link-card" href="hazards.html">
+    <div class="link-title">Hazards Board</div>
+    <div class="link-desc">Combined alerts, radar, and summary</div>
+  </a>
+
+  <a class="link-card" href="traffic.html">
+    <div class="link-title">Traffic</div>
+    <div class="link-desc">511PA closures and restrictions</div>
+  </a>
+
+  <a class="link-card" href="stormreports.html">
+    <div class="link-title">Storm Reports</div>
+    <div class="link-desc">Recent storm activity (24h)</div>
+  </a>
+
+  <a class="link-card" href="airports.html">
+    <div class="link-title">Airports</div>
+    <div class="link-desc">PA airport + METAR status</div>
+  </a>
+
 </div>
 
 <div class="status" id="statusText">Loading...</div>
@@ -108,23 +167,21 @@
 const TRAFFIC_BASE = "https://alerts.kb3cat.com/data/";
 const NWS_URL = "https://api.weather.gov/alerts/active?area=PA";
 
-/* ---------------- ICON HANDLING ---------------- */
+/* ---------- ICON HANDLING ---------- */
 
 function getRouteIconCandidates(route) {
   if (!route) return [];
 
   const clean = route.toUpperCase().replace(/\s+/g, "");
   const noDash = clean.replace("-", "").toLowerCase();
-  const withDash = clean.includes("-") ? clean.toLowerCase() : clean.replace(/^([A-Z]+)(\d+)/, "$1-$2").toLowerCase();
+  const withDash = clean.toLowerCase();
 
-return [
-  `${TRAFFIC_BASE}icons/${noDash}small.png`,
-  `${TRAFFIC_BASE}icons/${withDash.replace("-", "")}small.png`,
-  `${TRAFFIC_BASE}icons/${noDash}.small.png`,
-  `${TRAFFIC_BASE}icons/${withDash}.small.png`,
-  `${TRAFFIC_BASE}icons/${noDash}.png`,
-  `${TRAFFIC_BASE}icons/${withDash}.png`
-];
+  return [
+    `${TRAFFIC_BASE}icons/${noDash}small.png`,
+    `${TRAFFIC_BASE}icons/${withDash.replace("-", "")}small.png`,
+    `${TRAFFIC_BASE}icons/${noDash}.small.png`,
+    `${TRAFFIC_BASE}icons/${withDash}.small.png`
+  ];
 }
 
 function tryNextIcon(img) {
@@ -140,7 +197,7 @@ function tryNextIcon(img) {
   img.src = list[0] + "?v=" + Date.now();
 }
 
-/* ---------------- WEATHER ALERTS ---------------- */
+/* ---------- WEATHER ---------- */
 
 function isValidAlert(p) {
   const e = (p.event || "").toLowerCase();
@@ -167,14 +224,11 @@ function renderAlerts(data) {
   countEl.textContent = alerts.length;
 
   summaryEl.innerHTML = alerts.slice(0,5).map(a => `
-    <div>
-      <strong>${a.event}</strong><br>
-      ${a.areaDesc}
-    </div>
+    <div><strong>${a.event}</strong><br>${a.areaDesc}</div>
   `).join("");
 }
 
-/* ---------------- TRAFFIC ---------------- */
+/* ---------- TRAFFIC ---------- */
 
 function renderClosures(data) {
   const closures = data.items || [];
@@ -184,7 +238,6 @@ function renderClosures(data) {
 
   if (!closures.length) {
     countEl.textContent = "None";
-    summaryEl.innerHTML = "";
     return;
   }
 
@@ -205,7 +258,7 @@ function renderClosures(data) {
   }).join("");
 }
 
-/* ---------------- LOAD ---------------- */
+/* ---------- LOAD ---------- */
 
 async function loadDashboard() {
 
@@ -213,7 +266,6 @@ async function loadDashboard() {
     const alerts = await fetch(NWS_URL).then(r => r.json());
     renderAlerts(alerts);
   } catch {
-    // IMPORTANT: fallback = NONE, not N/A
     document.getElementById("alertsCount").textContent = "None";
   }
 
