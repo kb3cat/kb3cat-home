@@ -19,7 +19,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 12px;
     }
 
@@ -33,11 +33,37 @@
     .title {
       font-size: 18px;
       margin-bottom: 8px;
+      font-weight: bold;
     }
 
     .value {
       font-size: 28px;
       font-weight: bold;
+    }
+
+    .summary {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .closure-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-top: 1px solid #333;
+    }
+
+    .closure-row:first-child {
+      border-top: none;
+    }
+
+    .route-icon {
+      width: 34px;
+      height: 24px;
+      object-fit: contain;
+      flex-shrink: 0;
     }
 
     .links {
@@ -81,13 +107,15 @@
 
 <div class="grid">
   <div class="card">
-    <div class="title">Active Alerts</div>
-    <div class="value" id="alertsCount">--</div>
+    <div class="title">Active Watches and Warnings</div>
+    <div class="value" id="watchWarningCount">--</div>
+    <div class="summary" id="watchWarningSummary"></div>
   </div>
 
   <div class="card">
-    <div class="title">Major Closures</div>
+    <div class="title">Major Route Closures</div>
     <div class="value" id="closuresCount">--</div>
+    <div class="summary" id="closuresSummary"></div>
   </div>
 
   <div class="card">
@@ -97,10 +125,10 @@
 </div>
 
 <div class="links">
-  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Alerts</a>
-  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Traffic</a>
-  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Storm Reports</a>
-  <a class="link" href="https://alerts.kb3cat.com/airports.html">Airports</a>
+  <a class="link" href="https://alerts.kb3cat.com/hazards.html">Pennsylvania Weather Alerts</a>
+  <a class="link" href="https://alerts.kb3cat.com/traffic.html">Pennsylvania Traffic</a>
+  <a class="link" href="https://alerts.kb3cat.com/stormreports.html">Pennsylvania Storm Reports</a>
+  <a class="link" href="https://alerts.kb3cat.com/airports.html">Pennsylvania Airport Statuses</a>
 </div>
 
 <div class="status" id="statusText">Loading dashboard data...</div>
@@ -118,19 +146,16 @@ async function fetchJson(path) {
   return res.json();
 }
 
-function countItems(data) {
-  if (Array.isArray(data)) return data.length;
-  if (Array.isArray(data.items)) return data.items.length;
-  if (Array.isArray(data.alerts)) return data.alerts.length;
-  if (Array.isArray(data.features)) return data.features.length;
-  if (Array.isArray(data.closures)) return data.closures.length;
-  if (typeof data.count === "number") return data.count;
-  return 0;
+function getArray(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.items)) return data.items;
+  if (Array.isArray(data.alerts)) return data.alerts;
+  if (Array.isArray(data.features)) return data.features;
+  return [];
 }
 
 function formatTime(value) {
   if (!value) return "--";
-
   const d = new Date(value);
   if (isNaN(d)) return String(value);
 
@@ -143,20 +168,108 @@ function formatTime(value) {
   });
 }
 
+function isWatchOrWarning(alert) {
+  const text = (
+    alert.event ||
+    alert.type ||
+    alert.headline ||
+    alert.title ||
+    alert.name ||
+    ""
+  ).toLowerCase();
+
+  return text.includes("warning") || text.includes("watch");
+}
+
+function getAlertName(alert) {
+  return alert.event || alert.type || alert.headline || alert.title || alert.name || "Alert";
+}
+
+function getRouteIcon(route) {
+  if (!route) return "";
+
+  const clean = String(route).toUpperCase().replace(/\s+/g, "");
+
+  let typ = "";
+  let num = "";
+
+  if (/^I-?\d+/.test(clean)) {
+    typ = "i";
+    num = clean.replace(/^I-?/, "");
+  } else if (/^US-?\d+/.test(clean)) {
+    typ = "us";
+    num = clean.replace(/^US-?/, "");
+  } else if (/^PA-?\d+/.test(clean)) {
+    typ = "pa";
+    num = clean.replace(/^PA-?/, "");
+  }
+
+  if (!typ || !num) return "";
+
+  return `${DATA_BASE}icons/${typ}${num}.small.png?v=${Date.now()}`;
+}
+
+function renderWatchWarnings(alerts) {
+  const filtered = getArray(alerts).filter(isWatchOrWarning);
+
+  document.getElementById("watchWarningCount").textContent =
+    filtered.length ? filtered.length : "None";
+
+  const summary = document.getElementById("watchWarningSummary");
+
+  if (!filtered.length) {
+    summary.textContent = "";
+    return;
+  }
+
+  summary.innerHTML = filtered
+    .slice(0, 5)
+    .map(a => `<div>${getAlertName(a)}</div>`)
+    .join("");
+}
+
+function renderClosures(closuresData) {
+  const closures = getArray(closuresData);
+
+  document.getElementById("closuresCount").textContent =
+    closures.length ? closures.length : "None";
+
+  const summary = document.getElementById("closuresSummary");
+
+  if (!closures.length) {
+    summary.textContent = "";
+    return;
+  }
+
+  summary.innerHTML = closures.map(c => {
+    const route = c.route || "";
+    const direction = c.direction ? ` ${c.direction}` : "";
+    const county = c.county ? ` (${c.county})` : "";
+    const icon = getRouteIcon(route);
+
+    return `
+      <div class="closure-row">
+        ${icon ? `<img class="route-icon" src="${icon}" alt="">` : ""}
+        <div><strong>${route}</strong>${direction}${county}</div>
+      </div>
+    `;
+  }).join("");
+}
+
 async function loadDashboard() {
   let ok = true;
 
   try {
     const alerts = await fetchJson("alerts.json");
-    document.getElementById("alertsCount").textContent = countItems(alerts);
+    renderWatchWarnings(alerts);
   } catch (e) {
-    document.getElementById("alertsCount").textContent = "N/A";
+    document.getElementById("watchWarningCount").textContent = "N/A";
     ok = false;
   }
 
   try {
     const closures = await fetchJson("major_route_closures.json");
-    document.getElementById("closuresCount").textContent = countItems(closures);
+    renderClosures(closures);
   } catch (e) {
     document.getElementById("closuresCount").textContent = "N/A";
     ok = false;
