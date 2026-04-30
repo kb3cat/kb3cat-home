@@ -117,12 +117,14 @@ function getRouteIconCandidates(route) {
   const noDash = clean.replace("-", "").toLowerCase();
   const withDash = clean.includes("-") ? clean.toLowerCase() : clean.replace(/^([A-Z]+)(\d+)/, "$1-$2").toLowerCase();
 
-  return [
-    `${TRAFFIC_BASE}icons/${noDash}.small.png`,
-    `${TRAFFIC_BASE}icons/${withDash}.small.png`,
-    `${TRAFFIC_BASE}icons/${noDash}.png`,
-    `${TRAFFIC_BASE}icons/${withDash}.png`
-  ];
+return [
+  `${TRAFFIC_BASE}icons/${noDash}small.png`,
+  `${TRAFFIC_BASE}icons/${withDash.replace("-", "")}small.png`,
+  `${TRAFFIC_BASE}icons/${noDash}.small.png`,
+  `${TRAFFIC_BASE}icons/${withDash}.small.png`,
+  `${TRAFFIC_BASE}icons/${noDash}.png`,
+  `${TRAFFIC_BASE}icons/${withDash}.png`
+];
 }
 
 function tryNextIcon(img) {
