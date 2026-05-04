@@ -55,37 +55,54 @@
       opacity: 0.85;
     }
 
-    .link-grid {
+    .preview-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
       margin-top: 10px;
     }
 
-    .link-card {
+    .preview-card {
       text-decoration: none;
       color: #fff;
       background: linear-gradient(180deg, #1a1a1a, #111);
       border: 1px solid #2a2a2d;
-      border-radius: 12px;
-      padding: 14px;
+      border-radius: 14px;
+      overflow: hidden;
       transition: 0.15s;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
-    .link-card:hover {
-      transform: translateY(-2px);
+    .preview-card:hover {
+      transform: translateY(-3px);
       border-color: #00bfff;
     }
 
-    .link-title {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 8px;
+    .preview-card img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid #2a2a2d;
+      background: #111;
     }
 
-    .link-desc {
+    .preview-content {
+      padding: 12px;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    .preview-desc {
       font-size: 12px;
       color: #aaa;
+      line-height: 1.35;
     }
 
     .status {
@@ -124,36 +141,54 @@
 
 <div class="section-title">PennAlerts Boards</div>
 
-<div class="link-grid">
+<div class="preview-grid">
 
-  <a class="link-card" href="https://alerts.kb3cat.com/alerts.html">
-    <div class="link-title">Weather Alerts</div>
-    <div class="link-desc">Active PA watches and warnings</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/alerts.html">
+    <img src="/images/cards/alerts.png" alt="Weather Alerts board preview">
+    <div class="preview-content">
+      <div class="preview-title">Weather Alerts</div>
+      <div class="preview-desc">Active PA watches and warnings</div>
+    </div>
   </a>
 
-  <a class="link-card" href="https://alerts.kb3cat.com/advisories.html">
-    <div class="link-title">Advisories</div>
-    <div class="link-desc">Includes advisories + alerts</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/advisories.html">
+    <img src="/images/cards/advisories.png" alt="Advisories board preview">
+    <div class="preview-content">
+      <div class="preview-title">Advisories</div>
+      <div class="preview-desc">Includes advisories + alerts</div>
+    </div>
   </a>
 
-  <a class="link-card" href="https://alerts.kb3cat.com/hazards.html">
-    <div class="link-title">Hazards Board</div>
-    <div class="link-desc">Combined alerts, radar, and summary</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/hazards.html">
+    <img src="/images/cards/hazards.png" alt="Hazards board preview">
+    <div class="preview-content">
+      <div class="preview-title">Hazards Board</div>
+      <div class="preview-desc">Combined alerts, radar, and summary</div>
+    </div>
   </a>
 
-  <a class="link-card" href="https://alerts.kb3cat.com/traffic.html">
-    <div class="link-title">Traffic</div>
-    <div class="link-desc">511PA closures and restrictions</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/traffic.html">
+    <img src="/images/cards/traffic.png" alt="Traffic board preview">
+    <div class="preview-content">
+      <div class="preview-title">Traffic</div>
+      <div class="preview-desc">511PA closures and restrictions</div>
+    </div>
   </a>
 
-  <a class="link-card" href="https://alerts.kb3cat.com/stormreports.html">
-    <div class="link-title">Storm Reports</div>
-    <div class="link-desc">Recent storm activity (24h)</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/stormreports.html">
+    <img src="/images/cards/stormreports.png" alt="Storm Reports board preview">
+    <div class="preview-content">
+      <div class="preview-title">Storm Reports</div>
+      <div class="preview-desc">Recent storm activity (24h)</div>
+    </div>
   </a>
 
-  <a class="link-card" href="https://alerts.kb3cat.com/airports.html">
-    <div class="link-title">Airports</div>
-    <div class="link-desc">PA airport + METAR status</div>
+  <a class="preview-card" href="https://alerts.kb3cat.com/airports.html">
+    <img src="/images/cards/airports.png" alt="Airports board preview">
+    <div class="preview-content">
+      <div class="preview-title">Airports</div>
+      <div class="preview-desc">PA airport + METAR status</div>
+    </div>
   </a>
 
 </div>
@@ -161,7 +196,7 @@
 <!-- ✅ UPDATED CONTACT BUTTON -->
 <div style="margin-top:20px; text-align:center;">
 
-  <a href="contact.html" style="
+  <a href="https://kb3cat.com/contact.html" style="
        display:inline-block;
        padding:12px 18px;
        background:#00bfff;
@@ -314,5 +349,6 @@ setInterval(loadDashboard, 300000);
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" crossorigin="anonymous"></script>
 
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"bcc2369b13aa483b95f11c2006ef0157","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
